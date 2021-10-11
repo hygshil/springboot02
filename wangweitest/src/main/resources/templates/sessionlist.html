@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>第一张表</title>
+    <!--<link rel="stylesheet" href="/element-ui-2.13.2.css">-->
+    <script src="/vue.js"></script>
+    <!--<script src="/element-ui-2.13.2.js"></script>-->
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <template>
+        <div>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                    prop="actionTime"
+                    label="时间"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="userid"
+                    label="id"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="pageid"
+                    label="分页id">
+            </el-table-column>
+            <el-table-column
+                    prop="sessionid"
+                    label="表id">
+            </el-table-column>
+        </el-table>
+        </div>
+
+        <div class="block">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-sizes="[10, 20, 30, 40]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="total">
+            </el-pagination>
+        </div>
+    </template>
+</div>
+
+<script>
+    var vm = new Vue({
+        el:"#app",
+        data:{
+            tableData: [],
+            currentPage: 1,
+            page:1,
+            limit:10,
+            total:0
+        },
+        methods:{
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                this.loadTable(this.page,val)
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                this.loadTable(val,this.limit)
+            },
+            loadTable:function(page,limit){
+                //页面一加载就要访问url  /student/selectAll
+                axios.get("/sessionlog/selectPageAll",{
+                    params:{
+                        page:page,
+                        limit:limit
+                    }
+                }).then(res=>{
+                    console.log(res)
+                    //把json数组赋值给tableData
+                    this.tableData=res.data.data.list
+                    this.total=res.data.data.total
+                });
+            }
+        },
+        created(){
+            this.loadTable(this.page,this.limit);
+        }
+        // created:function () {
+        //
+        // }
+    })
+</script>
+</body>
+</html>

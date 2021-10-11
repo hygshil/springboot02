@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>第二张表</title>
+    <!--<link rel="stylesheet" href="/element-ui-2.13.2.css">-->
+    <script src="/vue.js"></script>
+    <!--<script src="/element-ui-2.13.2.js"></script>-->
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <template>
+        <!--搜索框-->
+        <div>
+            <el-select v-model="syslog.eventType" placeholder="请选择">
+                <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                </el-option>
+            </el-select>
+
+            <el-input v-model="syslog.categoryId" placeholder="请输入种类编号" style="width: 20%"></el-input>
+
+            <!--<div class="block">-->
+                <!--<span class="demonstration">默认</span>-->
+                <!--<el-date-picker-->
+                        <!--v-model="syslog.eventTime"-->
+                        <!--type="datetime"-->
+                        <!--placeholder="选择日期时间">-->
+                <!--</el-date-picker>-->
+            <!--</div>-->
+
+            <el-button type="primary" @click="searchBtn">搜索</el-button>
+        </div>
+        <div>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                    prop="userSession"
+                    label="用户session"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="eventType"
+                    label="事件类型"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="categoryId"
+                    label="种类编号">
+            </el-table-column>
+            <el-table-column
+                    prop="userId"
+                    label="用户编号">
+            </el-table-column>
+            <el-table-column
+                    prop="productId"
+                    label="产品编号">
+            </el-table-column>
+            <el-table-column
+                    prop="addressName"
+                    label="地址">
+            </el-table-column>
+            <el-table-column
+                    prop="eventTime"
+                    label="事件时间">
+            </el-table-column>
+        </el-table>
+        </div>
+
+        <div class="block">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-sizes="[10, 20, 30, 40]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="total">
+            </el-pagination>
+        </div>
+    </template>
+</div>
+
+<script>
+    var vm = new Vue({
+        el:"#app",
+        data:{
+            tableData: [],
+            currentPage: 1,
+            page:1,
+            limit:10,
+            total:0,
+            options: [{
+                value: 'view',
+                label: 'view'
+            }, {
+                value: 'purchase',
+                label: 'purchase'
+            }, {
+                value: 'cart',
+                label: 'cart'
+            }],
+            syslog:{
+                eventType:"",
+                categoryId:'',
+                eventTime:''
+            },
+            input: ''
+        },
+        methods:{
+            searchBtn:function(){
+                console.log("发送axios...")
+                this.loadTable(this.page, this.limit);
+            },
+
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                this.loadTable(this.page,val)
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                this.loadTable(val,this.limit)
+            },
+            loadTable:function(page,limit){
+                axios.get("/syslog/selectPageAll",{
+                    params:{
+                        page:page,
+                        limit:limit,
+                        eventType:this.syslog.eventType,
+                        categoryId:this.syslog.categoryId,
+                      //  eventTime:this.syslog.eventTime
+                    }
+                }).then(res=>{
+                    console.log(res),
+                    //把json数组赋值给tableData
+                    this.tableData=res.data.data.list
+                    this.total=res.data.data.total
+                });
+            }
+        },
+        created(){
+            this.loadTable(this.page,this.limit);
+        }
+        // created:function () {
+        //     //页面一加载就要访问url  /student/selectAll
+        //
+        // }
+    })
+</script>
+</body>
+</html>
